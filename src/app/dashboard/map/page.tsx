@@ -41,14 +41,14 @@ export default function MapPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mapboxToken, setMapboxToken] = useState('');
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchData();
-    fetchMapboxToken();
+    fetchGoogleMapsApiKey();
   }, [selectedTrip]);
 
   const fetchData = async () => {
@@ -77,15 +77,15 @@ export default function MapPage() {
     }
   };
 
-  const fetchMapboxToken = async () => {
+  const fetchGoogleMapsApiKey = async () => {
     try {
-      const res = await fetch('/api/settings/mapbox');
+      const res = await fetch('/api/settings/maps');
       if (res.ok) {
         const data = await res.json();
-        setMapboxToken(data.token);
+        setGoogleMapsApiKey(data.apiKey);
       }
     } catch (error) {
-      console.error('Failed to fetch mapbox token:', error);
+      console.error('Failed to fetch Google Maps API key:', error);
     }
   };
 
@@ -127,7 +127,7 @@ export default function MapPage() {
           <MapView
             locations={locations}
             onLocationClick={handleLocationClick}
-            accessToken={mapboxToken}
+            apiKey={googleMapsApiKey}
           />
         )}
 
