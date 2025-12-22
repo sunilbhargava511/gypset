@@ -1,0 +1,219 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  name          String?
+  avatarUrl     String?
+  isAdmin       Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  trips         Trip[]
+  locations     Location[]
+  apiUsageLogs  ApiUsageLog[]
+  importJobs    ImportJob[]
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Trip {
+  id          String    @id @default(uuid())
+  userId      String
+  title       String
+  description String?
+  isPublic    Boolean   @default(false)
+  shareToken  String?   @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locations   Location[]
+  importJobs  ImportJob[]
+
+  @@map("trips")
+}
+
+model Location {
+  id                  String   @id @default(uuid())
+  tripId              String
+  userId              String
+
+  // Source info
+  sourceUrl           String?
+  urlTitle            String?
+  urlDescription      String?
+  urlImage            String?
+
+  // Geo data
+  name                String
+  latitude            Float
+  longitude           Float
+  address             String?
+
+  // Business info (extracted from URL)
+  phone               String?
+  hours               String?
+  priceRange          String?
+  rating              String?
+  cuisine             String?
+  reservationUrl      String?
+
+  // User content
+  audioUrl            String?
+  rawTranscription    String?
+  polishedDescription String?
+
+  // Ordering
+  orderIndex          Int      @default(0)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  trip                Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags                LocationTag[]
+  apiUsageLogs        ApiUsageLog[]
+
+  @@index([tripId])
+  @@index([userId])
+  @@map("locations")
+}
+
+model Tag {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  category     String   // 'place_type', 'ambience', 'timing', 'feature', 'cuisine', 'activity'
+  usageCount   Int      @default(0)
+  createdByLlm Boolean  @default(true)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  locations    LocationTag[]
+
+  @@index([category])
+  @@index([usageCount(sort: Desc)])
+  @@map("tags")
+}
+
+model LocationTag {
+  locationId String
+  tagId      String
+
+  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([locationId, tagId])
+  @@map("location_tags")
+}
+
+model SystemSetting {
+  key         String   @id
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model ApiUsageLog {
+  id                   String   @id @default(uuid())
+  userId               String
+  service              String   // 'openai_whisper', 'anthropic_claude', 'mapbox'
+  operation            String   // 'transcribe', 'generate_description', 'extract_tags', 'geocode'
+
+  // Request details
+  inputTokens          Int?
+  outputTokens         Int?
+  audioDurationSeconds Float?
+
+  // Cost
+  costUsd              Float
+
+  // Metadata
+  model                String?
+  locationId           String?
+  requestMetadata      Json?
+
+  createdAt            DateTime @default(now())
+
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location             Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([service])
+  @@index([userId])
+  @@map("api_usage_logs")
+}
+
+model ImportJob {
+  id                 String   @id @default(uuid())
+  userId             String
+  tripId             String
+  sourceType         String   // 'google_maps', 'google_docs', 'csv', 'json', 'kml'
+  sourceUrl          String?
+  fileName           String?
+  status             String   @default("pending") // 'pending', 'processing', 'completed', 'failed'
+  totalLocations     Int?
+  processedLocations Int      @default(0)
+  importedLocations  Int      @default(0)
+  errorMessage       String?
+  createdAt          DateTime @default(now())
+  completedAt        DateTime?
+
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip               Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("import_jobs")
+}

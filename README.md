@@ -1,36 +1,143 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gypste - Trip Curator
+
+A modern travel planning app that helps you bookmark locations, record voice notes, and transform them into polished travel writing using AI.
+
+## Features
+
+- **Chrome Extension**: Save locations from any website with one click
+- **Voice Notes**: Record audio notes about places you want to remember
+- **AI-Powered Writing**: Transform your notes into polished travel descriptions
+- **Smart Tagging**: Automatic categorization of places (restaurants, attractions, etc.)
+- **Trip Organization**: Group locations into trips
+- **Share Trips**: Generate shareable links for your curated trips
+- **Map View**: Visualize all your saved locations on a map
+
+## Tech Stack
+
+- **Frontend**: Next.js 16, React, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: PostgreSQL with Prisma ORM
+- **AI**: Google Gemini API
+- **Auth**: NextAuth.js
+- **Maps**: Mapbox GL
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+
+- PostgreSQL database (recommend [Neon](https://neon.tech) for free hosting)
+- Google Gemini API key
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/sunilbhargava511/gypste.git
+cd gypste
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables:
+```bash
+cp .env.example .env
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Edit `.env` with your values:
+- `DATABASE_URL`: Your PostgreSQL connection string
+- `NEXTAUTH_SECRET`: Generate with `openssl rand -base64 32`
+- `GOOGLE_GENERATIVE_AI_API_KEY`: From Google AI Studio
 
-## Learn More
+4. Set up the database:
+```bash
+npx prisma generate
+npx prisma db push
+npm run db:seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. Run the development server:
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+6. Open [http://localhost:3000](http://localhost:3000)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Default Login
 
-## Deploy on Vercel
+- **Username**: `admin`
+- **Password**: `1234`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Important**: Change this password after first login!
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Chrome Extension Setup
+
+1. Open Chrome and go to `chrome://extensions/`
+2. Enable "Developer mode"
+3. Click "Load unpacked"
+4. Select the `chrome-extension` folder from this repo
+5. The Trip Curator extension will appear in your toolbar
+
+## Deployment
+
+### Deploy to Vercel
+
+1. Push your code to GitHub
+2. Connect your repo to [Vercel](https://vercel.com)
+3. Add environment variables in Vercel dashboard
+4. Deploy!
+
+### Environment Variables for Production
+
+Set these in your hosting platform:
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `NEXTAUTH_SECRET` | Random secret for session encryption |
+| `NEXTAUTH_URL` | Your production URL (e.g., https://gypste.vercel.app) |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini API key |
+
+## Chrome Extension for Production
+
+After deploying, update the extension to use your production URL:
+
+1. Edit `chrome-extension/popup.js` and `chrome-extension/background.js`
+2. Change `API_BASE` from `http://localhost:3000` to your production URL
+3. Reload the extension in Chrome
+
+To publish on Chrome Web Store:
+1. Zip the `chrome-extension` folder
+2. Submit at [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard)
+
+## Admin Panel
+
+Access at `/admin` to configure:
+- **API Keys**: Manage Gemini and Mapbox keys
+- **Settings**: Control audio limits, LLM models, cost alerts
+- **Costs**: Track per-user API usage
+- **Tags**: Manage global tags
+
+## Project Structure
+
+```
+├── chrome-extension/    # Chrome extension files
+├── prisma/              # Database schema
+├── src/
+│   ├── app/
+│   │   ├── admin/       # Admin panel
+│   │   ├── api/         # API routes
+│   │   ├── dashboard/   # User dashboard
+│   │   ├── share/       # Public shared trips
+│   │   └── login/       # Auth pages
+│   ├── components/      # React components
+│   └── lib/             # Utilities
+└── scripts/             # Database scripts
+```
+
+## License
+
+MIT
