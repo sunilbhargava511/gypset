@@ -1,0 +1,68 @@
+Country,Platform,Website/App URL,Ratings,Written reviews,Menus,Notes
+Global,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,Menus may appear via Google Business Profile menu links/photos; coverage depends on business data.
+Global,Tripadvisor,https://www.tripadvisor.com/Restaurants,Yes,Yes,Sometimes,Menu availability varies; restaurants can upload menus/menu photos.
+Global,MICHELIN Guide,https://guide.michelin.com/,Yes (Michelin stars),"No (editorial, not user reviews)",Sometimes,Great for curated picks; not a crowdsourced review platform.
+Global,OpenTable,https://www.opentable.com/,Yes,Yes,Sometimes,Reviews typically come from verified diners; menus depend on restaurant profile.
+Global,TheFork (LaFourchette / ElTenedor),https://www.thefork.com/,Yes,Yes,Sometimes,Strong coverage in many European cities; menu/prices may be shown depending on listing.
+Global,Quandoo,https://www.quandoo.com/,Yes,Yes,Sometimes,Primarily reservations + discovery; menu/review coverage varies by restaurant.
+United States,Yelp,https://www.yelp.com/,Yes,Yes,Sometimes,Menus often present via menu links or photos; varies by restaurant.
+United States,OpenTable,https://www.opentable.com/,Yes,Yes,Sometimes,See Global row; strong US coverage.
+United States,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+Canada,Yelp,https://www.yelp.ca/,Yes,Yes,Sometimes,Canadian domain; coverage best in major cities.
+Canada,OpenTable,https://www.opentable.ca/,Yes,Yes,Sometimes,Canadian domain.
+Canada,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+United Kingdom,OpenTable,https://www.opentable.co.uk/,Yes,Yes,Sometimes,UK domain.
+United Kingdom,TheFork,https://www.thefork.co.uk/,Yes,Yes,Sometimes,UK domain; coverage varies by city.
+United Kingdom,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+Ireland,OpenTable,https://www.opentable.ie/,Yes,Yes,Sometimes,Ireland domain.
+Ireland,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+France,TheFork (LaFourchette),https://www.thefork.fr/,Yes,Yes,Sometimes,France domain.
+France,MICHELIN Guide,https://guide.michelin.com/fr/fr,Yes (Michelin stars),No (editorial),Sometimes,France landing.
+France,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+Italy,TheFork,https://www.thefork.it/,Yes,Yes,Sometimes,Italy domain.
+Italy,MICHELIN Guide,https://guide.michelin.com/it/it,Yes (Michelin stars),No (editorial),Sometimes,Italy landing.
+Italy,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+Spain,TheFork (ElTenedor),https://www.thefork.es/,Yes,Yes,Sometimes,Spain domain.
+Spain,MICHELIN Guide,https://guide.michelin.com/es/es,Yes (Michelin stars),No (editorial),Sometimes,Spain landing.
+Spain,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+Portugal,TheFork,https://www.thefork.pt/,Yes,Yes,Sometimes,Portugal domain.
+Portugal,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+Portugal,Tripadvisor,https://www.tripadvisor.com/Restaurants-g189100-Portugal.html,Yes,Yes,Sometimes,Portugal restaurant hub.
+Germany,Quandoo,https://www.quandoo.de/,Yes,Yes,Sometimes,Germany domain.
+Germany,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+Germany,MICHELIN Guide,https://guide.michelin.com/de/de,Yes (Michelin stars),No (editorial),Sometimes,Germany landing.
+Netherlands,TheFork,https://www.thefork.nl/,Yes,Yes,Sometimes,Netherlands domain.
+Netherlands,Quandoo,https://www.quandoo.nl/,Yes,Yes,Sometimes,Netherlands domain.
+Switzerland,Quandoo,https://www.quandoo.ch/,Yes,Yes,Sometimes,Switzerland domain.
+Switzerland,MICHELIN Guide,https://guide.michelin.com/ch/en,Yes (Michelin stars),No (editorial),Sometimes,Switzerland landing.
+Greece,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,Often the most complete option for hours/reviews in Greece.
+Greece,Tripadvisor,https://www.tripadvisor.com/Restaurants-g189398-Greece.html,Yes,Yes,Sometimes,Greece restaurant hub.
+United Arab Emirates,Zomato,https://www.zomato.com/dubai,Yes,Yes (may vary by market),Yes,Listings typically include menus/photos and ratings; review detail can vary by market/features.
+United Arab Emirates,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+India,Zomato,https://www.zomato.com/india,Yes,Yes (may vary by market),Yes,Dining discovery + menus; features can change by region.
+India,Swiggy,https://www.swiggy.com/,Yes,Yes,Yes,Strong for menus/orderable items; reviews/ratings available.
+India,Swiggy Dineout,https://www.dineout.co.in/,Yes,Yes,Sometimes,Primarily dining deals/reservations; menus may be partial.
+India,EazyDiner,https://www.eazydiner.com/,Yes,Yes,Sometimes,Deals/reservations + reviews; verify restaurant exists (listings can be stale).
+Thailand,Wongnai,https://www.wongnai.com/,Yes,Yes,Yes,Thailand’s biggest local platform; menus and dish recs common.
+Thailand,Chope,https://www.chope.co/,Yes,Yes,Yes,Chope supports star ratings + text reviews and can show menus/dish highlights; coverage in Bangkok/Phuket and more.
+Thailand,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+Singapore,OpenRice,https://www.openrice.com/en/singapore,Yes,Yes,Yes,Strong in SG for menus + user reviews/ratings.
+Singapore,Chope,https://www.chope.co/,Yes,Yes,Yes,Reviews are typically post-dining; also a reservations platform.
+Singapore,Burpple,https://www.burpple.com/,No (primarily write-ups),Yes,No,Good for narrative recs + photos; not a star-rating site.
+Singapore,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+Hong Kong,OpenRice,https://www.openrice.com/en/hongkong,Yes,Yes,Yes,HK’s dominant local platform; menus frequently included.
+Hong Kong,Chope,https://www.chope.co/,Yes,Yes,Yes,Chope operates in Hong Kong; good for booking + reviews.
+Indonesia,Chope,https://www.chope.co/,Yes,Yes,Yes,Operates in Bali/Jakarta per Chope; useful for curated dining + booking.
+Indonesia,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,Most reliable for day-to-day accuracy.
+Philippines,Tripadvisor,https://www.tripadvisor.com/Restaurants-g294245-Philippines.html,Yes,Yes,Sometimes,Good for tourist-heavy areas; menu availability varies.
+Philippines,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,Often best source for current hours + reviews.
+Philippines,Booky,https://booky.ph/,Unknown,Unknown/limited,Sometimes,Primarily deals/discovery; menu info appears in some listings but reviews/ratings aren’t consistently surfaced.
+Japan,Tabelog,https://tabelog.com/en/,Yes,Yes,Sometimes,Ratings + reviews are core; menu coverage varies by restaurant.
+Japan,Rakuten Gurunavi,https://gurunavi.com/en/,Sometimes (often via TripAdvisor),Sometimes (often via TripAdvisor),Yes,Commonly shows TripAdvisor traveler reviews and indicates English menu availability.
+Japan,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+South Korea,Naver Map,https://map.naver.com/,Yes,Yes,Yes,Naver Map highlights reviews and also shows menus/prices for venues.
+China,Dianping (大众点评),https://www.dianping.com/,Yes,Yes,Sometimes,Huge local platform; menus are often via photos/dish lists rather than standardized menus.
+Mexico,OpenTable,https://www.opentable.com.mx/,Yes,Yes,Sometimes,Mexico domain.
+Mexico,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,See Global row.
+Brazil,Google Maps,https://www.google.com/maps,Yes,Yes,Sometimes,Most universal option.
+Brazil,Tripadvisor,https://www.tripadvisor.com/Restaurants-g294280-Brazil.html,Yes,Yes,Sometimes,Brazil restaurant hub.

@@ -108,6 +108,16 @@ model Location {
   cuisine             String?
   reservationUrl      String?
 
+  // Google Places data
+  googlePlaceId          String?
+  googleRating           Float?
+  googleReviewCount      Int?
+  googleTypes            String[]
+  googleWebsite          String?
+  googleFormattedPhone   String?
+  googleFormattedAddress String?
+  placesEnrichedAt       DateTime?
+
   // User content
   audioUrl            String?
   rawTranscription    String?
@@ -216,4 +226,19 @@ model ImportJob {
   @@index([userId])
   @@index([status])
   @@map("import_jobs")
+}
+
+model ReviewSite {
+  id         String   @id @default(uuid())
+  country    String   // "Global", "United States", "Thailand", etc.
+  platform   String   // "Yelp", "Wongnai", "Zomato", etc.
+  url        String   // Base URL for the platform
+  hasRatings Boolean  @default(true)
+  hasReviews Boolean  @default(true)
+  hasMenus   Boolean  @default(false)
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  @@index([country])
+  @@map("review_sites")
 }

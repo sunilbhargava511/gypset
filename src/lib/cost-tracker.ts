@@ -11,11 +11,16 @@ const PRICING = {
     'gemini-1.5-flash': { input: 0.075 / 1_000_000, output: 0.30 / 1_000_000 },
     'gemini-1.5-pro': { input: 1.25 / 1_000_000, output: 5.0 / 1_000_000 },
   } as Record<string, { input: number; output: number }>,
+  google_places: {
+    // Places API (New) pricing per request
+    text_search: 0.032,
+    place_details: 0.017,
+  } as Record<string, number>,
 };
 
 export interface CostEntry {
   userId: string;
-  service: 'google_gemini';
+  service: 'google_gemini' | 'google_places';
   operation: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -32,6 +37,11 @@ export function calculateCost(entry: CostEntry): number {
     const pricing = PRICING.google_gemini[entry.model];
     if (pricing && entry.inputTokens !== undefined && entry.outputTokens !== undefined) {
       cost = entry.inputTokens * pricing.input + entry.outputTokens * pricing.output;
+    }
+  } else if (entry.service === 'google_places') {
+    const pricing = PRICING.google_places[entry.operation];
+    if (pricing) {
+      cost = pricing;
     }
   }
 

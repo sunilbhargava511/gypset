@@ -41,6 +41,12 @@ export interface Location {
   polishedDescription: string | null;
   tags: LocationTag[];
   orderIndex: number;
+  // Google Places enrichment
+  googlePlaceId?: string | null;
+  googleRating?: number | null;
+  googleReviewCount?: number | null;
+  googleTypes?: string[];
+  googleWebsite?: string | null;
 }
 
 interface LocationCardProps {
@@ -87,7 +93,9 @@ export default function LocationCard({
   const [showModal, setShowModal] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  const hasRating = location.rating && parseFloat(location.rating) > 0;
+  // Prefer Google rating over scraped rating
+  const displayRating = location.googleRating || (location.rating ? parseFloat(location.rating) : null);
+  const hasRating = displayRating && displayRating > 0;
   const hasPriceRange = location.priceRange && location.priceRange.length > 0;
   const hasBusinessInfo = location.phone || location.hours || location.reservationUrl;
 
@@ -128,7 +136,10 @@ export default function LocationCard({
           {hasRating && (
             <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 bg-white/95 backdrop-blur-sm rounded-full shadow-lg">
               <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-              <span className="text-sm font-semibold text-gray-800">{location.rating}</span>
+              <span className="text-sm font-semibold text-gray-800">{displayRating?.toFixed(1)}</span>
+              {location.googleReviewCount && (
+                <span className="text-xs text-gray-500">({location.googleReviewCount})</span>
+              )}
             </div>
           )}
 

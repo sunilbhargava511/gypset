@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   X,
@@ -18,10 +18,20 @@ import {
   Globe,
   Copy,
   Check,
+  Search,
 } from 'lucide-react';
-import { useState } from 'react';
 import toast from 'react-hot-toast';
 import type { Location } from './LocationCard';
+
+interface ReviewSite {
+  id: string;
+  country: string;
+  platform: string;
+  url: string;
+  hasRatings: boolean;
+  hasReviews: boolean;
+  hasMenus: boolean;
+}
 
 interface LocationModalProps {
   location: Location;
@@ -48,9 +58,78 @@ const getCategoryColor = (category: string) => {
   }
 };
 
+// Extract country from address (simple heuristic)
+function extractCountryFromAddress(address: string | null): string | null {
+  if (!address) return null;
+
+  // Common country patterns at end of address
+  const countryPatterns: Record<string, string> = {
+    'thailand': 'Thailand',
+    'usa': 'United States',
+    'united states': 'United States',
+    'uk': 'United Kingdom',
+    'united kingdom': 'United Kingdom',
+    'france': 'France',
+    'italy': 'Italy',
+    'spain': 'Spain',
+    'germany': 'Germany',
+    'japan': 'Japan',
+    'india': 'India',
+    'singapore': 'Singapore',
+    'hong kong': 'Hong Kong',
+    'indonesia': 'Indonesia',
+    'philippines': 'Philippines',
+    'mexico': 'Mexico',
+    'brazil': 'Brazil',
+    'canada': 'Canada',
+    'australia': 'Australia',
+  };
+
+  const lowerAddress = address.toLowerCase();
+  for (const [pattern, country] of Object.entries(countryPatterns)) {
+    if (lowerAddress.includes(pattern)) {
+      return country;
+    }
+  }
+  return null;
+}
+
+// Build search URL for review site
+function buildSearchUrl(site: ReviewSite, locationName: string, address: string | null): string {
+  const searchQuery = encodeURIComponent(locationName + (address ? ' ' + address.split(',')[0] : ''));
+
+  // Platform-specific search URL patterns
+  const searchPatterns: Record<string, string> = {
+    'Yelp': `${site.url}/search?find_desc=${searchQuery}`,
+    'Tripadvisor': `${site.url}/Search?q=${searchQuery}`,
+    'OpenTable': `${site.url}/s?term=${searchQuery}`,
+    'Google Maps': `https://www.google.com/maps/search/${searchQuery}`,
+    'Zomato': `${site.url}/search?q=${searchQuery}`,
+    'TheFork': `${site.url}/search?query=${searchQuery}`,
+  };
+
+  return searchPatterns[site.platform] || `${site.url}/search?q=${searchQuery}`;
+}
+
 export default function LocationModal({ location, onClose, onDelete }: LocationModalProps) {
   const [imageError, setImageError] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [reviewSites, setReviewSites] = useState<ReviewSite[]>([]);
+
+  // Fetch review sites based on location's country
+  const fetchReviewSites = useCallback(async () => {
+    try {
+      const country = extractCountryFromAddress(location.address);
+      const params = country ? `?country=${encodeURIComponent(country)}` : '';
+      const res = await fetch(`/api/review-sites${params}`);
+      if (res.ok) {
+        const data = await res.json();
+        setReviewSites(data.sites || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch review sites:', error);
+    }
+  }, [location.address]);
 
   // Close on escape key
   useEffect(() => {
@@ -69,7 +148,14 @@ export default function LocationModal({ location, onClose, onDelete }: LocationM
     };
   }, []);
 
-  const hasRating = location.rating && parseFloat(location.rating) > 0;
+  // Fetch review sites on mount
+  useEffect(() => {
+    fetchReviewSites();
+  }, [fetchReviewSites]);
+
+  // Prefer Google rating over scraped rating
+  const displayRating = location.googleRating || (location.rating ? parseFloat(location.rating) : null);
+  const hasRating = displayRating && displayRating > 0;
 
   const copyAddress = () => {
     if (location.address) {
@@ -144,7 +230,10 @@ export default function LocationModal({ location, onClose, onDelete }: LocationM
               {hasRating && (
                 <div className="flex items-center gap-1.5 px-3 py-2 bg-white rounded-xl shadow-lg">
                   <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
-                  <span className="text-lg font-bold text-gray-800">{location.rating}</span>
+                  <span className="text-lg font-bold text-gray-800">{displayRating?.toFixed(1)}</span>
+                  {location.googleReviewCount && (
+                    <span className="text-sm text-gray-500">({location.googleReviewCount})</span>
+                  )}
                 </div>
               )}
             </div>
@@ -277,6 +366,30 @@ export default function LocationModal({ location, onClose, onDelete }: LocationM
               <p className="text-gray-600 leading-relaxed">
                 {location.polishedDescription || location.rawTranscription}
               </p>
+            </div>
+          )}
+
+          {/* Find Reviews Section */}
+          {reviewSites.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <Search className="w-4 h-4 text-gray-400" />
+                Find Reviews
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {reviewSites.slice(0, 6).map((site) => (
+                  <a
+                    key={site.id}
+                    href={buildSearchUrl(site, location.name, location.address)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    {site.platform}
+                  </a>
+                ))}
+              </div>
             </div>
           )}
 

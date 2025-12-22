@@ -83,6 +83,8 @@ export default function CostsPage() {
     switch (svc) {
       case 'google_gemini':
         return 'Gemini';
+      case 'google_places':
+        return 'Places';
       default:
         return svc;
     }
@@ -92,6 +94,8 @@ export default function CostsPage() {
     switch (svc) {
       case 'google_gemini':
         return 'bg-blue-100 text-blue-800';
+      case 'google_places':
+        return 'bg-green-100 text-green-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -169,6 +173,7 @@ export default function CostsPage() {
             >
               <option value="all">All Services</option>
               <option value="google_gemini">Gemini</option>
+              <option value="google_places">Places</option>
             </select>
           </div>
           <div>

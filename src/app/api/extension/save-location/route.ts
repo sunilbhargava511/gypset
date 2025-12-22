@@ -9,6 +9,8 @@ import {
   generateTravelWriting,
 } from '@/lib/llm';
 import { fetchUrlContent, formatUrlContentForLlm, UrlContent } from '@/lib/url-fetcher';
+import { getPlaceEnrichment } from '@/lib/google-places';
+import { trackApiUsage } from '@/lib/cost-tracker';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': 'chrome-extension://*',
@@ -139,6 +141,27 @@ export async function POST(request: NextRequest) {
       console.error('Geocoding error:', error);
     }
 
+    // Enrich with Google Places data if we have valid coordinates
+    let placesData: Awaited<ReturnType<typeof getPlaceEnrichment>> = null;
+    if (latitude !== 0 && longitude !== 0) {
+      try {
+        console.log('Enriching with Google Places:', name);
+        placesData = await getPlaceEnrichment(name, latitude, longitude);
+        if (placesData) {
+          // Track the API usage
+          await trackApiUsage({
+            userId,
+            service: 'google_places',
+            operation: 'text_search',
+            locationId: location.id,
+          });
+          console.log('Places enrichment successful');
+        }
+      } catch (error) {
+        console.error('Places enrichment error:', error);
+      }
+    }
+
     // Extract tags
     let tagIds: string[] = [];
     try {
@@ -186,9 +209,22 @@ export async function POST(request: NextRequest) {
       data: {
         latitude,
         longitude,
-        address: address || null,
+        address: placesData?.googleFormattedAddress || address || null,
         rawTranscription: rawTranscription || null,
         polishedDescription: polishedDescription || null,
+        // Google Places enrichment data
+        googlePlaceId: placesData?.googlePlaceId || null,
+        googleRating: placesData?.googleRating || null,
+        googleReviewCount: placesData?.googleReviewCount || null,
+        googleTypes: placesData?.googleTypes || [],
+        googleWebsite: placesData?.googleWebsite || null,
+        googleFormattedPhone: placesData?.googleFormattedPhone || null,
+        googleFormattedAddress: placesData?.googleFormattedAddress || null,
+        placesEnrichedAt: placesData ? new Date() : null,
+        // Override with Places data if available
+        phone: placesData?.googleFormattedPhone || urlContent.phone || null,
+        hours: placesData?.hours || urlContent.hours || null,
+        priceRange: placesData?.priceRange || urlContent.priceRange || null,
         tags: {
           create: tagIds.map((tagId) => ({
             tagId,
