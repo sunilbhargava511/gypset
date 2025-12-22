@@ -11,14 +11,11 @@ const PRICING = {
     'gemini-1.5-flash': { input: 0.075 / 1_000_000, output: 0.30 / 1_000_000 },
     'gemini-1.5-pro': { input: 1.25 / 1_000_000, output: 5.0 / 1_000_000 },
   } as Record<string, { input: number; output: number }>,
-  mapbox: {
-    geocoding: { perRequest: 0.0005 },
-  } as Record<string, { perRequest: number }>,
 };
 
 export interface CostEntry {
   userId: string;
-  service: 'google_gemini' | 'mapbox';
+  service: 'google_gemini';
   operation: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -36,9 +33,6 @@ export function calculateCost(entry: CostEntry): number {
     if (pricing && entry.inputTokens !== undefined && entry.outputTokens !== undefined) {
       cost = entry.inputTokens * pricing.input + entry.outputTokens * pricing.output;
     }
-  } else if (entry.service === 'mapbox') {
-    const pricing = PRICING.mapbox.geocoding;
-    cost = pricing.perRequest;
   }
 
   return cost;

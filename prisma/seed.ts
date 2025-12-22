@@ -35,7 +35,6 @@ async function main() {
   // Create initial system settings
   const settings = [
     { key: 'google_api_key', value: '', description: 'Google API key for Gemini AI and Maps' },
-    { key: 'mapbox_api_key', value: '', description: 'Mapbox API key for maps' },
     { key: 'gemini_model', value: 'gemini-2.0-flash', description: 'Gemini model to use for AI features' },
     { key: 'max_audio_duration_seconds', value: '0', description: 'Maximum audio recording duration in seconds (0 = unlimited)' },
     { key: 'audio_recording_enabled', value: 'true', description: 'Enable/disable audio recording feature' },

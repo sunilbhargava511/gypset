@@ -81,12 +81,8 @@ export default function CostsPage() {
 
   const getServiceLabel = (svc: string) => {
     switch (svc) {
-      case 'anthropic_claude':
-        return 'Claude';
-      case 'openai_whisper':
-        return 'Whisper';
-      case 'mapbox':
-        return 'Mapbox';
+      case 'google_gemini':
+        return 'Gemini';
       default:
         return svc;
     }
@@ -94,11 +90,7 @@ export default function CostsPage() {
 
   const getServiceColor = (svc: string) => {
     switch (svc) {
-      case 'anthropic_claude':
-        return 'bg-purple-100 text-purple-800';
-      case 'openai_whisper':
-        return 'bg-green-100 text-green-800';
-      case 'mapbox':
+      case 'google_gemini':
         return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -176,9 +168,7 @@ export default function CostsPage() {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
             >
               <option value="all">All Services</option>
-              <option value="anthropic_claude">Claude</option>
-              <option value="openai_whisper">Whisper</option>
-              <option value="mapbox">Mapbox</option>
+              <option value="google_gemini">Gemini</option>
             </select>
           </div>
           <div>

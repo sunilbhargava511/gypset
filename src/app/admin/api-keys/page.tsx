@@ -16,29 +16,16 @@ const API_KEYS: ApiKeyConfig[] = [
   {
     key: 'google_api_key',
     label: 'Google API Key',
-    description: 'Required for Gemini AI (text generation, audio transcription, geocoding) and imports',
-    helpUrl: 'https://aistudio.google.com/app/apikey',
+    description: 'Required for Gemini AI (text generation, audio transcription, geocoding), Maps, and imports',
+    helpUrl: 'https://console.cloud.google.com/apis/credentials',
     helpSteps: [
-      'Go to aistudio.google.com/app/apikey',
+      'Go to console.cloud.google.com/apis/credentials',
       'Sign in with your Google account',
-      'Click "Create API Key"',
-      'Select or create a Google Cloud project',
+      'Create a new project or select existing one',
+      'Click "Create Credentials" → "API Key"',
       'Copy the generated API key',
-      'The key works for Gemini AI immediately',
-      'For Maps/Places features, also enable those APIs in Google Cloud Console',
-    ],
-  },
-  {
-    key: 'mapbox_api_key',
-    label: 'Mapbox Access Token',
-    description: 'Required for map display and visualization',
-    helpUrl: 'https://account.mapbox.com/access-tokens',
-    helpSteps: [
-      'Go to account.mapbox.com',
-      'Sign in or create an account',
-      'Navigate to Access Tokens',
-      'Use default public token or create new one',
-      'For production, restrict token to your domain',
+      'Go to "APIs & Services" → "Library"',
+      'Enable: Generative Language API, Maps JavaScript API, Places API',
     ],
   },
 ];
@@ -103,7 +90,7 @@ export default function ApiKeysPage() {
           <div>
             <h3 className="text-sm font-medium text-green-800">Simplified Setup</h3>
             <p className="text-sm text-green-700 mt-1">
-              Trip Curator uses Google Gemini for all AI features (transcription, text generation, geocoding). You only need two API keys!
+              Gypste uses Google for everything - Gemini AI for transcription, text generation, geocoding, and Google Maps for map display. You only need one API key!
             </p>
           </div>
         </div>
@@ -250,8 +237,8 @@ export default function ApiKeysPage() {
             <p className="text-xs text-green-600 mt-1">Very affordable - handles text, audio, and images!</p>
           </div>
           <div>
-            <h3 className="font-medium text-gray-900">Mapbox</h3>
-            <p className="text-sm text-gray-500 mt-1">50,000 free map loads/month, then $0.50 per 1,000</p>
+            <h3 className="font-medium text-gray-900">Google Maps JavaScript API</h3>
+            <p className="text-sm text-gray-500 mt-1">$7.00 per 1,000 loads after free tier (28,000 free loads/month)</p>
           </div>
         </div>
       </div>
