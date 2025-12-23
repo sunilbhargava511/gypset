@@ -327,7 +327,7 @@ export default function ExtensionPage() {
             <ArrowRight className="w-4 h-4" />
           </Link>
           <a
-            href="https://github.com/sunilbhargava511/gypste"
+            href="https://github.com/sunilbhargava511/gypset"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-colors"
