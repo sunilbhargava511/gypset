@@ -15,12 +15,78 @@ export interface UrlContent {
   reservationUrl?: string;
 }
 
+// Detect social media platforms and extract profile/page info from URL
+function extractSocialMediaInfo(url: string): { platform: string; name: string; displayName: string } | null {
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.toLowerCase();
+    const pathname = urlObj.pathname;
+
+    // Instagram: instagram.com/username or instagram.com/p/postid
+    if (hostname.includes('instagram.com')) {
+      const match = pathname.match(/^\/([^\/\?]+)/);
+      if (match && !['p', 'reel', 'reels', 'stories', 'explore', 'accounts'].includes(match[1])) {
+        const username = match[1];
+        // Convert username to display name (e.g., sync_coffee -> Sync Coffee)
+        const displayName = username
+          .replace(/[._]/g, ' ')
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+        return { platform: 'Instagram', name: username, displayName };
+      }
+    }
+
+    // Facebook: facebook.com/pagename
+    if (hostname.includes('facebook.com') || hostname.includes('fb.com')) {
+      const match = pathname.match(/^\/([^\/\?]+)/);
+      if (match && !['photo', 'photos', 'video', 'videos', 'events', 'groups', 'watch', 'marketplace'].includes(match[1])) {
+        const pageName = match[1];
+        const displayName = pageName
+          .replace(/[._-]/g, ' ')
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+        return { platform: 'Facebook', name: pageName, displayName };
+      }
+    }
+
+    // Twitter/X: twitter.com/username or x.com/username
+    if (hostname.includes('twitter.com') || hostname.includes('x.com')) {
+      const match = pathname.match(/^\/([^\/\?]+)/);
+      if (match && !['home', 'explore', 'search', 'notifications', 'messages', 'i', 'settings'].includes(match[1])) {
+        const username = match[1];
+        const displayName = username
+          .replace(/[._]/g, ' ')
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+        return { platform: 'Twitter', name: username, displayName };
+      }
+    }
+
+    // TikTok: tiktok.com/@username
+    if (hostname.includes('tiktok.com')) {
+      const match = pathname.match(/^\/@([^\/\?]+)/);
+      if (match) {
+        const username = match[1];
+        const displayName = username
+          .replace(/[._]/g, ' ')
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+        return { platform: 'TikTok', name: username, displayName };
+      }
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchUrlContent(url: string): Promise<UrlContent> {
+  // Check for social media URLs first - these are JS-rendered and won't have useful HTML
+  const socialMediaInfo = extractSocialMediaInfo(url);
+
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; TripCurator/1.0)',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
       },
       signal: AbortSignal.timeout(10000), // 10 second timeout
     });
@@ -35,10 +101,15 @@ export async function fetchUrlContent(url: string): Promise<UrlContent> {
     // Remove script and style elements
     $('script, style, noscript, iframe').remove();
 
-    // Extract metadata
-    const title = $('title').text().trim() ||
-                  $('meta[property="og:title"]').attr('content') ||
-                  $('h1').first().text().trim() || '';
+    // Extract metadata - for social media, use display name as fallback
+    let title = $('meta[property="og:title"]').attr('content') ||
+                $('title').text().trim() ||
+                $('h1').first().text().trim() || '';
+
+    // If we got a social media URL and title is empty or generic, use extracted name
+    if (socialMediaInfo && (!title || title.length < 3 || title.toLowerCase().includes('instagram') || title.toLowerCase().includes('login'))) {
+      title = socialMediaInfo.displayName;
+    }
 
     const description = $('meta[name="description"]').attr('content') ||
                        $('meta[property="og:description"]').attr('content') || '';
@@ -266,6 +337,16 @@ export async function fetchUrlContent(url: string): Promise<UrlContent> {
     };
   } catch (error) {
     console.error('Error fetching URL content:', error);
+
+    // If fetch failed but we have social media info, return that as fallback
+    if (socialMediaInfo) {
+      return {
+        title: socialMediaInfo.displayName,
+        description: `${socialMediaInfo.platform} profile: @${socialMediaInfo.name}`,
+        content: '',
+      };
+    }
+
     return {
       title: '',
       description: '',
