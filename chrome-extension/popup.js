@@ -1,6 +1,6 @@
 // GYPSET Chrome Extension
 
-const API_BASE = 'https://gypste-production.up.railway.app';
+const API_BASE = 'https://gypset-production.up.railway.app';
 
 let state = {
   isLoggedIn: false,
