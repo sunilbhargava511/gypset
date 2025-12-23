@@ -17,8 +17,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
 
+    console.log('Parsing text, length:', text.length);
+
     // Extract locations from text using AI
     const parsedLocations = await extractLocationsFromText(text, session.user.id);
+    console.log('Parsed locations count:', parsedLocations.length);
 
     if (parsedLocations.length === 0) {
       return NextResponse.json({
@@ -29,15 +32,19 @@ export async function POST(req: NextRequest) {
 
     // Optionally geocode the locations
     if (geocode) {
+      console.log('Geocoding locations...');
       const geocodedLocations = await geocodeParsedLocations(parsedLocations, session.user.id);
+      console.log('Geocoded locations:', geocodedLocations.length);
       return NextResponse.json({ locations: geocodedLocations });
     }
 
     return NextResponse.json({ locations: parsedLocations });
   } catch (error) {
     console.error('Parse text error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to parse text';
+    console.error('Error message:', errorMessage);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to parse text' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

@@ -111,14 +111,14 @@ export default function SmartImportPage() {
         body: JSON.stringify({ text: textInput, geocode: true }),
       });
 
-      if (!res.ok) {
-        throw new Error('Failed to parse text');
-      }
-
       const data = await res.json();
 
-      if (data.locations.length === 0) {
-        toast.error('No locations found in the text');
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to parse text');
+      }
+
+      if (!data.locations || data.locations.length === 0) {
+        toast.error(data.message || 'No locations found in the text');
         return;
       }
 
