@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
         name: l.name,
         address: l.address,
         url: l.url,
-        notes: l.notes,
+        notes: l.description,
       }));
     } else if (sourceType === 'csv' && csvData) {
       // Parse CSV data

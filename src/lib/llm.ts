@@ -319,35 +319,66 @@ Return JSON in this exact format:
   }
 }
 
+export interface ParsedLocation {
+  name: string;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  url: string | null;
+  rating: string | null;
+  reviewCount: string | null;
+  priceRange: string | null;
+  cuisine: string | null;
+  description: string | null;
+  highlights: string[];
+  bestFor: string | null;
+  timing: string | null;
+  vibes: string | null;
+}
+
+export interface GeocodedParsedLocation extends ParsedLocation {
+  latitude: number | null;
+  longitude: number | null;
+  geocodeConfidence: 'high' | 'medium' | 'low' | null;
+}
+
 export async function extractLocationsFromText(
   text: string,
   userId: string
-): Promise<
-  Array<{
-    name: string;
-    address: string | null;
-    url: string | null;
-    notes: string | null;
-  }>
-> {
-  const prompt = `Extract all locations/places mentioned in this text. Return only valid JSON.
+): Promise<ParsedLocation[]> {
+  const prompt = `Extract all locations/places mentioned in this text with as much detail as possible. Return only valid JSON.
 
 Text:
-${text.substring(0, 5000)}
+${text.substring(0, 8000)}
 
 Return JSON in this exact format:
 {
   "locations": [
     {
       "name": "Place name",
-      "address": "Address if mentioned, or null",
+      "address": "Full address if mentioned, or null",
+      "city": "City name if identifiable, or null",
+      "country": "Country name if identifiable, or null",
       "url": "URL if mentioned, or null",
-      "notes": "Any notes or descriptions mentioned, or null"
+      "rating": "Rating like '4.5' or '4.5/5' if mentioned, or null",
+      "reviewCount": "Number of reviews like '500' if mentioned, or null",
+      "priceRange": "Price range like '$', '$$', '$$$', '$$$$' or actual prices, or null",
+      "cuisine": "Type of cuisine or food if restaurant, or null",
+      "description": "Brief description of the place, combining any info given, or null",
+      "highlights": ["array", "of", "notable", "features", "dishes", "or", "attractions"],
+      "bestFor": "What the place is best for (e.g., 'sunset views', 'date night', 'brunch'), or null",
+      "timing": "Best time to visit or opening hours if mentioned, or null",
+      "vibes": "Atmosphere/ambience description if mentioned, or null"
     }
   ]
 }
 
-Extract all identifiable places, restaurants, hotels, attractions, etc.`;
+Guidelines:
+- Extract ALL places mentioned (restaurants, bars, hotels, attractions, cafes, etc.)
+- Combine scattered information about the same place
+- If the text describes dishes, views, ambience, or other details, include them
+- For highlights, extract specific dishes, features, or must-try items mentioned
+- Be comprehensive - capture all the details that would help someone decide to visit`;
 
   const result = await callGemini(prompt, userId, 'extract_locations');
 
@@ -357,8 +388,97 @@ Extract all identifiable places, restaurants, hotels, attractions, etc.`;
       return [];
     }
     const parsed = JSON.parse(jsonMatch[0]);
-    return parsed.locations || [];
+    return (parsed.locations || []).map((loc: Partial<ParsedLocation>) => ({
+      name: loc.name || 'Unknown',
+      address: loc.address || null,
+      city: loc.city || null,
+      country: loc.country || null,
+      url: loc.url || null,
+      rating: loc.rating || null,
+      reviewCount: loc.reviewCount || null,
+      priceRange: loc.priceRange || null,
+      cuisine: loc.cuisine || null,
+      description: loc.description || null,
+      highlights: loc.highlights || [],
+      bestFor: loc.bestFor || null,
+      timing: loc.timing || null,
+      vibes: loc.vibes || null,
+    }));
   } catch {
     return [];
+  }
+}
+
+export async function geocodeParsedLocations(
+  locations: ParsedLocation[],
+  userId: string
+): Promise<GeocodedParsedLocation[]> {
+  // Build location hints for better geocoding
+  const locationHints = locations.map((loc) => {
+    const parts = [loc.name];
+    if (loc.address) parts.push(loc.address);
+    if (loc.city) parts.push(loc.city);
+    if (loc.country) parts.push(loc.country);
+    return parts.join(', ');
+  });
+
+  const prompt = `Geocode the following locations. Return only valid JSON with coordinates.
+
+Locations to geocode:
+${locationHints.map((hint, i) => `${i + 1}. ${hint}`).join('\n')}
+
+Return JSON in this exact format:
+{
+  "results": [
+    {
+      "index": 0,
+      "latitude": 37.7749,
+      "longitude": -122.4194,
+      "confidence": "high"
+    }
+  ]
+}
+
+Guidelines:
+- Return coordinates for each location by its index (0-based)
+- confidence: "high" for well-known/specific places, "medium" for general areas, "low" for uncertain
+- For places you don't recognize or can't geocode, still include them with null coordinates
+- Use your knowledge of restaurants, hotels, and attractions to find coordinates`;
+
+  try {
+    const result = await callGemini(prompt, userId, 'batch_geocode');
+    const jsonMatch = result.text.match(/\{[\s\S]*\}/);
+
+    if (!jsonMatch) {
+      return locations.map((loc) => ({
+        ...loc,
+        latitude: null,
+        longitude: null,
+        geocodeConfidence: null,
+      }));
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    const geocodeResults = parsed.results || [];
+
+    // Map results back to locations
+    return locations.map((loc, index) => {
+      const geoResult = geocodeResults.find(
+        (r: { index: number }) => r.index === index
+      );
+      return {
+        ...loc,
+        latitude: geoResult?.latitude || null,
+        longitude: geoResult?.longitude || null,
+        geocodeConfidence: geoResult?.confidence || null,
+      };
+    });
+  } catch {
+    return locations.map((loc) => ({
+      ...loc,
+      latitude: null,
+      longitude: null,
+      geocodeConfidence: null,
+    }));
   }
 }

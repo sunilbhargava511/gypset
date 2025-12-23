@@ -11,7 +11,8 @@ import {
   LogOut,
   Menu,
   X,
-  FolderOpen
+  FolderOpen,
+  Sparkles
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -26,6 +27,7 @@ export function Navbar() {
     { name: 'Trips', href: '/dashboard', icon: FolderOpen },
     { name: 'Map', href: '/dashboard/map', icon: Map },
     { name: 'Search', href: '/dashboard/search', icon: Search },
+    { name: 'Import', href: '/dashboard/import', icon: Sparkles },
   ];
 
   const isActive = (href: string) => {
