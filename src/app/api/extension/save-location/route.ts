@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
     let name = formData.get('name') as string;
     const sourceUrl = formData.get('sourceUrl') as string;
     const audioFile = formData.get('audio') as File | null;
+    const pageImage = formData.get('pageImage') as string | null; // Image URL from the extension
 
     if (!tripId) {
       return NextResponse.json(
@@ -106,6 +107,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Determine best image source:
+    // 1. pageImage from extension (captures og:image directly from rendered page)
+    // 2. urlContent.images (scraped from HTML)
+    const bestImage = pageImage || urlContent.images?.[0] || null;
+
     // Create initial location with all extracted data
     const location = await prisma.location.create({
       data: {
@@ -115,7 +121,7 @@ export async function POST(request: NextRequest) {
         sourceUrl,
         urlTitle: urlContent.title || null,
         urlDescription: urlContent.description || null,
-        urlImage: urlContent.images?.[0] || null,
+        urlImage: bestImage,
         phone: urlContent.phone || null,
         hours: urlContent.hours || null,
         priceRange: urlContent.priceRange || null,

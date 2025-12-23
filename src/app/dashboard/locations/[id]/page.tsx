@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ChevronLeft, ExternalLink, Tag, MapPin, Mic, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { AudioRecorder, ProcessingIndicator } from '@/components/AudioRecorder';
+import ImageUpload from '@/components/ImageUpload';
 
 interface LocationTag {
   tag: {
@@ -25,6 +26,7 @@ interface Location {
   urlTitle: string | null;
   urlDescription: string | null;
   urlImage: string | null;
+  userImage: string | null;
   rawTranscription: string | null;
   polishedDescription: string | null;
   tags: LocationTag[];
@@ -166,13 +168,18 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left Column - Details */}
         <div className="space-y-6">
-          {location.urlImage && (
-            <img
-              src={location.urlImage}
-              alt={location.name}
-              className="w-full h-64 object-cover rounded-xl"
+          {/* Image Upload Section */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <ImageUpload
+              currentImage={location.userImage || location.urlImage}
+              locationId={location.id}
+              onImageUploaded={(imageUrl) => {
+                setLocation((prev) =>
+                  prev ? { ...prev, userImage: imageUrl } : prev
+                );
+              }}
             />
-          )}
+          </div>
 
           <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
             {location.address && (

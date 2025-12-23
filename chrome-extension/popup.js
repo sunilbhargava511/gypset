@@ -7,6 +7,7 @@ let state = {
   trips: [],
   currentUrl: '',
   currentTitle: '',
+  currentImage: '',  // og:image from the page
   selectedTripId: '',
   isRecording: false,
   recordingTime: 0,
@@ -32,6 +33,47 @@ document.addEventListener('DOMContentLoaded', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   state.currentUrl = tab.url;
   state.currentTitle = tab.title;
+
+  // Try to extract og:image from the current page
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => {
+        // Try to find og:image meta tag
+        const ogImage = document.querySelector('meta[property="og:image"]');
+        if (ogImage) return ogImage.content;
+
+        // Fallback: try twitter:image
+        const twitterImage = document.querySelector('meta[name="twitter:image"]');
+        if (twitterImage) return twitterImage.content;
+
+        // Fallback: try to find the largest image on the page
+        const images = Array.from(document.querySelectorAll('img[src]'));
+        const largeImages = images.filter(img => {
+          const rect = img.getBoundingClientRect();
+          return rect.width >= 200 && rect.height >= 150;
+        });
+        if (largeImages.length > 0) {
+          // Sort by area and return the largest
+          largeImages.sort((a, b) => {
+            const areaA = a.naturalWidth * a.naturalHeight;
+            const areaB = b.naturalWidth * b.naturalHeight;
+            return areaB - areaA;
+          });
+          return largeImages[0].src;
+        }
+
+        return null;
+      }
+    });
+
+    if (results && results[0] && results[0].result) {
+      state.currentImage = results[0].result;
+    }
+  } catch (error) {
+    // Script injection might fail on some pages (chrome://, etc.)
+    console.log('Could not extract image from page:', error.message);
+  }
 
   // Check if logged in and fetch trips
   await checkAuthAndFetchTrips();
@@ -426,6 +468,11 @@ async function submitLocation() {
     formData.append('sourceUrl', state.currentUrl);
     // Name is now optional - backend will extract from URL content
     formData.append('name', state.currentTitle || '');
+
+    // Send the captured image from the page
+    if (state.currentImage) {
+      formData.append('pageImage', state.currentImage);
+    }
 
     if (state.audioBlob) {
       formData.append('audio', state.audioBlob, 'recording.webm');

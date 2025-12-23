@@ -1,14 +1,17 @@
 {
   "manifest_version": 3,
   "name": "GYPSET",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Save locations to GYPSET with voice notes",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
-    "http://localhost:3000/*"
+    "http://localhost:3000/*",
+    "https://*/*",
+    "http://*/*"
   ],
   "action": {
     "default_popup": "popup.html",

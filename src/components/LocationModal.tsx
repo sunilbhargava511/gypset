@@ -116,6 +116,9 @@ export default function LocationModal({ location, onClose, onDelete }: LocationM
   const [copied, setCopied] = useState(false);
   const [reviewSites, setReviewSites] = useState<ReviewSite[]>([]);
 
+  // Use user-uploaded image first, then fallback to URL-scraped image
+  const displayImage = location.userImage || location.urlImage;
+
   // Fetch review sites based on location's country
   const fetchReviewSites = useCallback(async () => {
     try {
@@ -189,9 +192,9 @@ export default function LocationModal({ location, onClose, onDelete }: LocationM
       >
         {/* Header Image */}
         <div className="relative h-56 sm:h-72 overflow-hidden">
-          {location.urlImage && !imageError ? (
+          {displayImage && !imageError ? (
             <img
-              src={location.urlImage}
+              src={displayImage}
               alt={location.name}
               onError={() => setImageError(true)}
               className="w-full h-full object-cover"

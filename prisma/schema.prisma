@@ -93,6 +93,7 @@ model Location {
   urlTitle            String?
   urlDescription      String?
   urlImage            String?
+  userImage           String?  // User-uploaded image (takes priority over urlImage)
 
   // Geo data
   name                String

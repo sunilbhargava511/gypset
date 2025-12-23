@@ -31,6 +31,7 @@ export interface Location {
   urlTitle: string | null;
   urlDescription: string | null;
   urlImage: string | null;
+  userImage: string | null;
   phone: string | null;
   hours: string | null;
   priceRange: string | null;
@@ -93,6 +94,9 @@ export default function LocationCard({
   const [showModal, setShowModal] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  // Use user-uploaded image first, then fallback to URL-scraped image
+  const displayImage = location.userImage || location.urlImage;
+
   // Prefer Google rating over scraped rating
   const displayRating = location.googleRating || (location.rating ? parseFloat(location.rating) : null);
   const hasRating = displayRating && displayRating > 0;
@@ -107,9 +111,9 @@ export default function LocationCard({
       >
         {/* Image Section */}
         <div className="relative h-44 overflow-hidden">
-          {location.urlImage && !imageError ? (
+          {displayImage && !imageError ? (
             <img
-              src={location.urlImage}
+              src={displayImage}
               alt={location.name}
               onError={() => setImageError(true)}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
