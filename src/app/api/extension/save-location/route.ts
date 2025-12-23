@@ -32,13 +32,20 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
 
     const tripId = formData.get('tripId') as string;
-    const name = formData.get('name') as string;
+    let name = formData.get('name') as string;
     const sourceUrl = formData.get('sourceUrl') as string;
     const audioFile = formData.get('audio') as File | null;
 
-    if (!tripId || !name) {
+    if (!tripId) {
       return NextResponse.json(
-        { error: 'Trip ID and name are required' },
+        { error: 'Trip ID is required' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (!sourceUrl) {
+      return NextResponse.json(
+        { error: 'Source URL is required' },
         { status: 400, headers: corsHeaders }
       );
     }
@@ -59,14 +66,43 @@ export async function POST(request: NextRequest) {
     let urlContent: UrlContent = { title: '', description: '', content: '' };
     let urlContentFormatted = '';
 
-    if (sourceUrl) {
-      try {
-        console.log('Fetching URL content:', sourceUrl);
-        urlContent = await fetchUrlContent(sourceUrl);
-        urlContentFormatted = formatUrlContentForLlm(urlContent);
-        console.log('URL content fetched successfully');
-      } catch (error) {
-        console.error('Error fetching URL content:', error);
+    try {
+      console.log('Fetching URL content:', sourceUrl);
+      urlContent = await fetchUrlContent(sourceUrl);
+      urlContentFormatted = formatUrlContentForLlm(urlContent);
+      console.log('URL content fetched successfully');
+    } catch (error) {
+      console.error('Error fetching URL content:', error);
+    }
+
+    // Extract name from URL content if not provided
+    if (!name || name.trim() === '') {
+      // Try to get name from URL content title, then fall back to URL
+      if (urlContent.title && urlContent.title.trim()) {
+        // Clean up the title - remove common suffixes like " - TripAdvisor", " | Yelp", etc.
+        name = urlContent.title
+          .replace(/\s*[-|–—]\s*(TripAdvisor|Yelp|Google Maps|OpenTable|Resy|Zomato|TheFork|Google|Facebook|Instagram).*$/i, '')
+          .replace(/\s*[-|–—]\s*Reviews.*$/i, '')
+          .replace(/\s*[-|–—]\s*Restaurant.*$/i, '')
+          .trim();
+      }
+
+      // If still no name, use a cleaned version of the URL
+      if (!name || name.trim() === '') {
+        try {
+          const urlObj = new URL(sourceUrl);
+          // Get the pathname and clean it up
+          name = urlObj.pathname
+            .split('/')
+            .filter(Boolean)
+            .pop() || urlObj.hostname;
+          // Replace dashes/underscores with spaces and capitalize
+          name = name
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+        } catch {
+          name = 'Saved Location';
+        }
       }
     }
 

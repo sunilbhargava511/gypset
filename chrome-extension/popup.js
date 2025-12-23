@@ -1,6 +1,6 @@
-// Trip Curator Chrome Extension
+// Gypste Chrome Extension
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'https://gypste-production.up.railway.app';
 
 let state = {
   isLoggedIn: false,
@@ -8,7 +8,6 @@ let state = {
   currentUrl: '',
   currentTitle: '',
   selectedTripId: '',
-  locationName: '',
   isRecording: false,
   recordingTime: 0,
   audioBlob: null,
@@ -17,6 +16,7 @@ let state = {
   showSuccess: false,
   error: null,
   savedLocationId: null,
+  savedLocationName: null,
   showNewTripForm: false,
   newTripName: '',
   isCreatingTrip: false,
@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   state.currentUrl = tab.url;
   state.currentTitle = tab.title;
-  state.locationName = tab.title;
 
   // Check if logged in and fetch trips
   await checkAuthAndFetchTrips();
@@ -68,6 +67,7 @@ function render() {
 
   if (state.showSuccess) {
     app.innerHTML = renderSuccess();
+    attachSuccessListeners();
     return;
   }
 
@@ -83,8 +83,8 @@ function render() {
 function renderLogin() {
   return `
     <div class="login-section">
-      <p>Please log in to Trip Curator to save locations.</p>
-      <button class="login-btn" onclick="openLogin()">Open Trip Curator</button>
+      <p>Please log in to Gypste to save locations.</p>
+      <button class="login-btn" onclick="openLogin()">Open Gypste</button>
     </div>
   `;
 }
@@ -95,8 +95,8 @@ function renderForm() {
       ${state.error ? `<div class="error-message">${state.error}</div>` : ''}
 
       <div class="form-group">
-        <label>Current Page</label>
-        <div class="url-display">${escapeHtml(state.currentUrl)}</div>
+        <label>Saving from</label>
+        <div class="url-display">${escapeHtml(state.currentTitle || state.currentUrl)}</div>
       </div>
 
       <div class="form-group">
@@ -131,11 +131,6 @@ function renderForm() {
         `}
       </div>
 
-      <div class="form-group">
-        <label for="locationName">Location Name</label>
-        <input type="text" id="locationName" value="${escapeHtml(state.locationName)}" placeholder="Enter a name for this place">
-      </div>
-
       <div class="audio-section">
         <h3>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -145,13 +140,13 @@ function renderForm() {
             <line x1="8" y1="23" x2="16" y2="23"/>
           </svg>
           Voice Note
-          <span class="optional-badge">Optional</span>
+          <span class="optional-badge">Optional - tell us why you want to visit</span>
         </h3>
 
         ${state.audioBlob ? renderAudioPreview() : renderRecordButton()}
       </div>
 
-      <button class="submit-btn" id="submitBtn" ${state.isSubmitting ? 'disabled' : ''}>
+      <button class="submit-btn" id="submitBtn" ${state.isSubmitting || !state.selectedTripId ? 'disabled' : ''}>
         ${state.isSubmitting ? `
           <div class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></div>
           Saving...
@@ -161,15 +156,17 @@ function renderForm() {
             <polyline points="17 21 17 13 7 13 7 21"/>
             <polyline points="7 3 7 8 15 8"/>
           </svg>
-          Save Location
+          Save This Place
         `}
       </button>
+
+      <p class="helper-text">We'll automatically extract the name, address, hours, and other details.</p>
     </div>
 
     ${state.isSubmitting ? `
       <div class="processing-overlay">
         <div class="spinner"></div>
-        <p>Processing your location...</p>
+        <p>Extracting details & saving...</p>
       </div>
     ` : ''}
   `;
@@ -215,15 +212,29 @@ function renderSuccess() {
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
-        <h2>Location Saved!</h2>
-        <p>Your location has been added to the trip.</p>
+        <h2>Saved!</h2>
+        <p>${state.savedLocationName ? escapeHtml(state.savedLocationName) : 'Location'} has been added to your trip.</p>
         <div class="success-actions">
-          <button class="secondary" id="addAnotherBtn">Add Another</button>
-          <button class="primary" id="viewLocationBtn">View Location</button>
+          <button class="secondary" id="addAnotherBtn">Save Another</button>
+          <button class="primary" id="viewLocationBtn">View Details</button>
         </div>
       </div>
     </div>
   `;
+}
+
+function attachSuccessListeners() {
+  const addAnotherBtn = document.getElementById('addAnotherBtn');
+  if (addAnotherBtn) {
+    addAnotherBtn.addEventListener('click', resetForm);
+  }
+
+  const viewLocationBtn = document.getElementById('viewLocationBtn');
+  if (viewLocationBtn) {
+    viewLocationBtn.addEventListener('click', () => {
+      chrome.tabs.create({ url: `${API_BASE}/dashboard/locations/${state.savedLocationId}` });
+    });
+  }
 }
 
 function attachEventListeners() {
@@ -269,13 +280,6 @@ function attachEventListeners() {
     createTripBtn.addEventListener('click', createNewTrip);
   }
 
-  const locationNameInput = document.getElementById('locationName');
-  if (locationNameInput) {
-    locationNameInput.addEventListener('input', (e) => {
-      state.locationName = e.target.value;
-    });
-  }
-
   const recordBtn = document.getElementById('recordBtn');
   if (recordBtn) {
     recordBtn.addEventListener('click', toggleRecording);
@@ -297,18 +301,6 @@ function attachEventListeners() {
   const submitBtn = document.getElementById('submitBtn');
   if (submitBtn) {
     submitBtn.addEventListener('click', submitLocation);
-  }
-
-  const addAnotherBtn = document.getElementById('addAnotherBtn');
-  if (addAnotherBtn) {
-    addAnotherBtn.addEventListener('click', resetForm);
-  }
-
-  const viewLocationBtn = document.getElementById('viewLocationBtn');
-  if (viewLocationBtn) {
-    viewLocationBtn.addEventListener('click', () => {
-      chrome.tabs.create({ url: `${API_BASE}/dashboard/locations/${state.savedLocationId}` });
-    });
   }
 }
 
@@ -395,7 +387,7 @@ async function startRecording() {
     render();
   } catch (error) {
     console.error('Failed to start recording:', error);
-    state.error = 'Microphone access denied. Please allow microphone access.';
+    state.error = 'Microphone access denied. Please allow microphone access in your browser settings.';
     render();
   }
 }
@@ -419,13 +411,7 @@ function deleteAudio() {
 
 async function submitLocation() {
   if (!state.selectedTripId) {
-    state.error = 'Please select a trip.';
-    render();
-    return;
-  }
-
-  if (!state.locationName.trim()) {
-    state.error = 'Please enter a location name.';
+    state.error = 'Please select or create a trip first.';
     render();
     return;
   }
@@ -437,8 +423,9 @@ async function submitLocation() {
   try {
     const formData = new FormData();
     formData.append('tripId', state.selectedTripId);
-    formData.append('name', state.locationName);
     formData.append('sourceUrl', state.currentUrl);
+    // Name is now optional - backend will extract from URL content
+    formData.append('name', state.currentTitle || '');
 
     if (state.audioBlob) {
       formData.append('audio', state.audioBlob, 'recording.webm');
@@ -457,6 +444,7 @@ async function submitLocation() {
 
     const result = await response.json();
     state.savedLocationId = result.id;
+    state.savedLocationName = result.name;
     state.showSuccess = true;
     state.isSubmitting = false;
     render();
@@ -472,11 +460,11 @@ async function resetForm() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   state.currentUrl = tab.url;
   state.currentTitle = tab.title;
-  state.locationName = tab.title;
   state.audioBlob = null;
   state.audioUrl = null;
   state.showSuccess = false;
   state.savedLocationId = null;
+  state.savedLocationName = null;
   state.error = null;
   render();
 }

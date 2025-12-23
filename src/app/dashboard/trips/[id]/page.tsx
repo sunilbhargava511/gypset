@@ -10,6 +10,8 @@ import {
   Share2,
   LayoutGrid,
   List,
+  Link as LinkIcon,
+  Loader2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import LocationCard, { Location } from '@/components/LocationCard';
@@ -30,13 +32,10 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Add location form
+  // Add location form - simplified to just URL
   const [newUrl, setNewUrl] = useState('');
-  const [newName, setNewName] = useState('');
-  const [newNotes, setNewNotes] = useState('');
-  const [newLat, setNewLat] = useState('');
-  const [newLng, setNewLng] = useState('');
   const [adding, setAdding] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState('');
 
   useEffect(() => {
     fetchTrip();
@@ -63,43 +62,47 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   const handleAddLocation = async () => {
-    if (!newName && !newUrl) {
-      toast.error('Please provide a name or URL');
+    if (!newUrl) {
+      toast.error('Please paste a URL');
+      return;
+    }
+
+    // Validate URL format
+    try {
+      new URL(newUrl);
+    } catch {
+      toast.error('Please enter a valid URL');
       return;
     }
 
     setAdding(true);
+    setProcessingStatus('Fetching page content...');
+
     try {
       const res = await fetch('/api/locations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tripId: id,
-          sourceUrl: newUrl || null,
-          name: newName || null,
-          latitude: newLat ? parseFloat(newLat) : null,
-          longitude: newLng ? parseFloat(newLng) : null,
-          notes: newNotes || null,
+          sourceUrl: newUrl,
         }),
       });
 
       if (res.ok) {
-        toast.success('Location added!');
+        toast.success('Place added successfully!');
         setShowAddLocation(false);
         setNewUrl('');
-        setNewName('');
-        setNewNotes('');
-        setNewLat('');
-        setNewLng('');
+        setProcessingStatus('');
         fetchTrip();
       } else {
         const data = await res.json();
-        toast.error(data.error || 'Failed to add location');
+        toast.error(data.error || 'Failed to add place');
       }
     } catch {
-      toast.error('Failed to add location');
+      toast.error('Failed to add place');
     } finally {
       setAdding(false);
+      setProcessingStatus('');
     }
   };
 
@@ -234,101 +237,76 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
       {/* Add Location Modal */}
       {showAddLocation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Add New Place</h2>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <LinkIcon className="w-5 h-5 text-indigo-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">Add Place</h2>
+                  <p className="text-sm text-gray-500">Paste a link and we&apos;ll do the rest</p>
+                </div>
+              </div>
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    URL (optional)
-                  </label>
                   <input
                     type="url"
                     value={newUrl}
                     onChange={(e) => setNewUrl(e.target.value)}
-                    placeholder="https://example.com/place"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    We&apos;ll extract location info and coordinates automatically
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Place Name
-                  </label>
-                  <input
-                    type="text"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    placeholder="e.g., Blue Bottle Coffee"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Paste URL here (e.g., Google Maps, Yelp, TripAdvisor...)"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base"
+                    autoFocus
+                    disabled={adding}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !adding) {
+                        handleAddLocation();
+                      }
+                    }}
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notes (optional)
-                  </label>
-                  <textarea
-                    value={newNotes}
-                    onChange={(e) => setNewNotes(e.target.value)}
-                    placeholder="Add any notes about this place..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 h-24 resize-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Latitude (optional)
-                    </label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={newLat}
-                      onChange={(e) => setNewLat(e.target.value)}
-                      placeholder="37.7749"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                    />
+                {adding && processingStatus && (
+                  <div className="flex items-center gap-3 p-4 bg-indigo-50 rounded-lg">
+                    <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
+                    <div>
+                      <p className="text-sm font-medium text-indigo-900">{processingStatus}</p>
+                      <p className="text-xs text-indigo-600">Extracting name, location, and details...</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Longitude (optional)
-                    </label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={newLng}
-                      onChange={(e) => setNewLng(e.target.value)}
-                      placeholder="-122.4194"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-                </div>
+                )}
+
+                <p className="text-xs text-gray-500 text-center">
+                  We&apos;ll automatically extract the name, address, photos, ratings, and more from the link.
+                </p>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6">
+              <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => {
                     setShowAddLocation(false);
                     setNewUrl('');
-                    setNewName('');
-                    setNewNotes('');
-                    setNewLat('');
-                    setNewLng('');
+                    setProcessingStatus('');
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  disabled={adding}
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleAddLocation}
-                  disabled={adding}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                  disabled={adding || !newUrl}
+                  className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium flex items-center justify-center gap-2"
                 >
-                  {adding ? 'Adding...' : 'Add Place'}
+                  {adding ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Add Place'
+                  )}
                 </button>
               </div>
             </div>
