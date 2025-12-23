@@ -383,12 +383,14 @@ Guidelines:
   const result = await callGemini(prompt, userId, 'extract_locations');
 
   try {
+    console.log('Gemini extract_locations response:', result.text.substring(0, 500));
     const jsonMatch = result.text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
+      console.error('No JSON found in extract_locations response');
       return [];
     }
     const parsed = JSON.parse(jsonMatch[0]);
-    return (parsed.locations || []).map((loc: Partial<ParsedLocation>) => ({
+    const locations = (parsed.locations || []).map((loc: Partial<ParsedLocation>) => ({
       name: loc.name || 'Unknown',
       address: loc.address || null,
       city: loc.city || null,
@@ -404,7 +406,10 @@ Guidelines:
       timing: loc.timing || null,
       vibes: loc.vibes || null,
     }));
-  } catch {
+    console.log(`Extracted ${locations.length} locations`);
+    return locations;
+  } catch (error) {
+    console.error('Failed to parse extract_locations response:', error);
     return [];
   }
 }
@@ -447,9 +452,11 @@ Guidelines:
 
   try {
     const result = await callGemini(prompt, userId, 'batch_geocode');
+    console.log('Gemini batch_geocode response:', result.text.substring(0, 500));
     const jsonMatch = result.text.match(/\{[\s\S]*\}/);
 
     if (!jsonMatch) {
+      console.error('No JSON found in batch_geocode response');
       return locations.map((loc) => ({
         ...loc,
         latitude: null,
@@ -460,6 +467,7 @@ Guidelines:
 
     const parsed = JSON.parse(jsonMatch[0]);
     const geocodeResults = parsed.results || [];
+    console.log(`Got ${geocodeResults.length} geocode results`);
 
     // Map results back to locations
     return locations.map((loc, index) => {
@@ -473,7 +481,8 @@ Guidelines:
         geocodeConfidence: geoResult?.confidence || null,
       };
     });
-  } catch {
+  } catch (error) {
+    console.error('Failed to parse batch_geocode response:', error);
     return locations.map((loc) => ({
       ...loc,
       latitude: null,
