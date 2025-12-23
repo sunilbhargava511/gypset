@@ -1,4 +1,4 @@
-// Gypste Chrome Extension
+// GYPSET Chrome Extension
 
 const API_BASE = 'https://gypste-production.up.railway.app';
 

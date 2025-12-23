@@ -36,7 +36,7 @@ export default function ExtensionPage() {
             <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
               <MapPin className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl text-gray-900">Gypste</span>
+            <span className="font-bold text-xl text-gray-900">GYPSET</span>
           </Link>
           <Link
             href="/login"
@@ -57,12 +57,12 @@ export default function ExtensionPage() {
           Save Places from Anywhere
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-          Install the Gypste Chrome extension to save restaurants, hotels, and attractions
+          Install the GYPSET Chrome extension to save restaurants, hotels, and attractions
           from any website with one click. Add voice notes to remember why you want to visit.
         </p>
 
         <a
-          href="/gypste-extension.zip"
+          href="/gypset-extension.zip"
           download
           className="inline-flex items-center gap-3 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-lg transition-all shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-indigo-300"
         >
@@ -127,7 +127,7 @@ export default function ExtensionPage() {
                 </h3>
                 <p className="text-gray-600 mb-4">
                   Click the download button above to get the extension ZIP file.
-                  Unzip it to a folder on your computer (e.g., Downloads/gypste-extension).
+                  Unzip it to a folder on your computer (e.g., Downloads/gypset-extension).
                 </p>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <p className="text-sm text-gray-500">
@@ -223,7 +223,7 @@ export default function ExtensionPage() {
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-green-800">
-                    You should see "Gypste - Trip Curator" appear in your extensions list.
+                    You should see "GYPSET" appear in your extensions list.
                     The extension icon will appear in your browser toolbar!
                   </p>
                 </div>
@@ -248,7 +248,7 @@ export default function ExtensionPage() {
                 <ol className="space-y-3 mb-4">
                   <li className="flex items-start gap-3">
                     <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 text-sm font-medium flex-shrink-0">a</span>
-                    <span className="text-gray-600">Click the Gypste extension icon in your toolbar</span>
+                    <span className="text-gray-600">Click the GYPSET extension icon in your toolbar</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 text-sm font-medium flex-shrink-0">b</span>
@@ -342,7 +342,7 @@ export default function ExtensionPage() {
       {/* Footer */}
       <footer className="border-t border-gray-100 py-8">
         <div className="max-w-5xl mx-auto px-4 text-center text-sm text-gray-500">
-          <p>© 2024 Gypste. Open source travel planning.</p>
+          <p>© 2024 GYPSET. Open source travel planning.</p>
         </div>
       </footer>
     </div>

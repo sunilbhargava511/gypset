@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Trip Curator",
+  "name": "GYPSET",
   "version": "1.0.0",
-  "description": "Save locations to Trip Curator with voice notes",
+  "description": "Save locations to GYPSET with voice notes",
   "permissions": [
     "activeTab",
     "storage"

@@ -146,7 +146,7 @@ export function MapView({
       <Map
         defaultCenter={initialCenter || { lat: 37.7749, lng: -122.4194 }}
         defaultZoom={zoom}
-        mapId="gypste-map"
+        mapId="gypset-map"
         gestureHandling="greedy"
         disableDefaultUI={false}
         className="w-full h-full rounded-xl overflow-hidden"

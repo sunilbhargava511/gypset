@@ -90,7 +90,7 @@ export default function ApiKeysPage() {
           <div>
             <h3 className="text-sm font-medium text-green-800">Simplified Setup</h3>
             <p className="text-sm text-green-700 mt-1">
-              Gypste uses Google for everything - Gemini AI for transcription, text generation, geocoding, and Google Maps for map display. You only need one API key!
+              GYPSET uses Google for everything - Gemini AI for transcription, text generation, geocoding, and Google Maps for map display. You only need one API key!
             </p>
           </div>
         </div>
