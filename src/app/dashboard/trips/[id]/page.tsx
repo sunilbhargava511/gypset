@@ -24,6 +24,9 @@ import {
   Hotel,
   Sparkles,
   MoreHorizontal,
+  MoreVertical,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Location } from '@/components/LocationCard';
@@ -81,6 +84,7 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
   const router = useRouter();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     fetchTrip();
@@ -142,6 +146,24 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
     toast.success('Share link copied!');
   };
 
+  const handleDeleteTrip = async () => {
+    if (!confirm('Are you sure you want to delete this trip? This will also delete all places in it.')) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/trips/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success('Trip deleted');
+        router.push('/dashboard');
+      } else {
+        toast.error('Failed to delete trip');
+      }
+    } catch {
+      toast.error('Failed to delete trip');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -197,6 +219,43 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
             <Sparkles className="w-4 h-4" />
             Smart Import
           </Link>
+          {/* More menu */}
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+            {menuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setMenuOpen(false)}
+                />
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                  <Link
+                    href={`/dashboard/trips/${trip.id}/edit`}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    Edit Trip
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      handleDeleteTrip();
+                    }}
+                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Trip
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
