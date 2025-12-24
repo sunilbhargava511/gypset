@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   APIProvider,
   Map,
-  AdvancedMarker,
+  Marker,
   InfoWindow,
   useMap,
 } from '@vis.gl/react-google-maps';
@@ -55,17 +55,17 @@ function MapMarkers({
   }, [map, locations]);
 
   // Fit bounds when locations change
-  useState(() => {
+  useEffect(() => {
     if (map && locations.length > 0) {
       // Small delay to ensure map is ready
       setTimeout(fitBounds, 100);
     }
-  });
+  }, [map, locations, fitBounds]);
 
   return (
     <>
       {locations.map((location) => (
-        <AdvancedMarker
+        <Marker
           key={location.id}
           position={{ lat: location.latitude, lng: location.longitude }}
           onClick={() => {
@@ -74,16 +74,7 @@ function MapMarkers({
               onLocationClick(location);
             }
           }}
-        >
-          <div
-            className="w-8 h-8 rounded-full bg-indigo-600 border-3 border-white shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform"
-            style={{
-              boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-            }}
-          >
-            <div className="w-2 h-2 rounded-full bg-white" />
-          </div>
-        </AdvancedMarker>
+        />
       ))}
 
       {selectedLocation && (
@@ -146,7 +137,6 @@ export function MapView({
       <Map
         defaultCenter={initialCenter || { lat: 37.7749, lng: -122.4194 }}
         defaultZoom={zoom}
-        mapId="gypset-map"
         gestureHandling="greedy"
         disableDefaultUI={false}
         className="w-full h-full rounded-xl overflow-hidden"
