@@ -466,7 +466,7 @@ Casual vibes, good for breakfast.`}
         <div className="flex-1 flex overflow-hidden">
           {/* Map View */}
           {viewMode === 'map' && (
-            <div className="flex-1 relative">
+            <div className="flex-1 relative min-h-[400px]">
               {!googleMapsApiKey ? (
                 <div className="w-full h-full flex items-center justify-center bg-gray-100">
                   <div className="text-center">
