@@ -256,6 +256,11 @@ export default function SmartImportPage() {
       polishedDescription: loc.description,
     }));
 
+  // Debug logging
+  console.log('parsedLocations:', parsedLocations.length);
+  console.log('mapLocations (with coords):', mapLocations.length);
+  console.log('googleMapsApiKey:', googleMapsApiKey ? 'set' : 'not set');
+
   const handleMapLocationClick = (mapLoc: MapLocation) => {
     setSelectedLocationId(mapLoc.id);
   };
@@ -462,21 +467,35 @@ Casual vibes, good for breakfast.`}
           {/* Map View */}
           {viewMode === 'map' && (
             <div className="flex-1 relative">
-              {googleMapsApiKey ? (
+              {!googleMapsApiKey ? (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                  <div className="text-center">
+                    <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500">Google Maps API key not configured</p>
+                    <p className="text-sm text-gray-400 mt-1">Add it in the Admin settings</p>
+                  </div>
+                </div>
+              ) : mapLocations.length === 0 ? (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                  <div className="text-center">
+                    <MapIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500">No locations with coordinates</p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      {parsedLocations.length} places found but none could be geocoded
+                    </p>
+                  </div>
+                </div>
+              ) : (
                 <MapView
                   locations={mapLocations}
                   onLocationClick={handleMapLocationClick}
                   apiKey={googleMapsApiKey}
                 />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                  <p className="text-gray-500">Google Maps API key not configured</p>
-                </div>
               )}
 
               {/* Location count badge */}
               <div className="absolute bottom-4 left-4 z-10 px-3 py-1.5 bg-white rounded-lg shadow-md text-sm text-gray-600">
-                {validCount} places on map
+                {mapLocations.length} places on map
               </div>
             </div>
           )}
