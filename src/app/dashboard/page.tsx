@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, MapPin, Trash2, Edit2, Share2, MoreVertical, Download, Chrome, Home } from 'lucide-react';
+import { Plus, MapPin, Trash2, Edit2, Share2, MoreVertical, Chrome, Home } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
@@ -201,28 +201,18 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Extension Banner */}
-      <div className="mb-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-6 text-white">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-white/20 rounded-xl">
-              <Chrome className="w-8 h-8" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg">Get the Chrome Extension</h3>
-              <p className="text-white/80 text-sm mt-1">
-                Save places from any website with one click. Add voice notes for personalized recommendations.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/extension"
-            className="flex items-center gap-2 px-5 py-2.5 bg-white text-indigo-600 rounded-lg font-medium hover:bg-white/90 transition-colors whitespace-nowrap"
-          >
-            <Download className="w-4 h-4" />
-            Download Extension
-          </Link>
+      {/* Extension Banner - subtle */}
+      <div className="mb-6 flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <div className="flex items-center gap-3 text-sm text-gray-600">
+          <Chrome className="w-4 h-4 text-gray-400" />
+          <span>Save places from any website with our Chrome extension</span>
         </div>
+        <Link
+          href="/extension"
+          className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+        >
+          Get Extension
+        </Link>
       </div>
 
       {/* Trips Grid */}
