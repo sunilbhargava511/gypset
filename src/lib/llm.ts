@@ -336,6 +336,63 @@ export interface ParsedLocation {
   vibes: string | null;
 }
 
+// Common category suggestions for trips
+export const SUGGESTED_CATEGORIES = [
+  'Eating',
+  'Drinking',
+  'Cafes',
+  'Temples',
+  'Sightseeing',
+  'Beaches',
+  'Snorkeling',
+  'Shopping',
+  'Nightlife',
+  'Activities',
+  'Nature',
+  'Museums',
+  'Hotels',
+] as const;
+
+export async function suggestCategory(
+  text: string,
+  userId: string
+): Promise<{ category: string; confidence: 'high' | 'medium' | 'low' }> {
+  const prompt = `Analyze this text and suggest the best category for these places. Return only valid JSON.
+
+Text (excerpt):
+${text.substring(0, 2000)}
+
+Available categories: ${SUGGESTED_CATEGORIES.join(', ')}
+
+Return JSON in this exact format:
+{
+  "category": "Best matching category from the list above",
+  "confidence": "high" if clearly one type, "medium" if mixed, "low" if unclear
+}
+
+Guidelines:
+- If the text is about restaurants, bars, food - use "Eating" or "Drinking" or "Cafes"
+- If about temples, religious sites - use "Temples"
+- If about tourist attractions, landmarks - use "Sightseeing"
+- If about water activities, diving - use "Snorkeling" or "Beaches"
+- Choose the MOST dominant category`;
+
+  try {
+    const result = await callGemini(prompt, userId, 'suggest_category');
+    const jsonMatch = result.text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return { category: 'Sightseeing', confidence: 'low' };
+    }
+    const parsed = JSON.parse(jsonMatch[0]);
+    return {
+      category: parsed.category || 'Sightseeing',
+      confidence: parsed.confidence || 'medium',
+    };
+  } catch {
+    return { category: 'Sightseeing', confidence: 'low' };
+  }
+}
+
 export interface GeocodedParsedLocation extends ParsedLocation {
   latitude: number | null;
   longitude: number | null;

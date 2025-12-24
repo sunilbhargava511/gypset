@@ -27,6 +27,7 @@ export interface Location {
   address: string | null;
   latitude: number;
   longitude: number;
+  category: string | null;
   sourceUrl: string | null;
   urlTitle: string | null;
   urlDescription: string | null;

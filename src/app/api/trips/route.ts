@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { title, description } = await req.json();
+  const { title, description, homeBaseAddress, homeBaseUrl, homeBaseLatitude, homeBaseLongitude } = await req.json();
 
   if (!title) {
     return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -45,6 +45,10 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
       title,
       description,
+      homeBaseAddress,
+      homeBaseUrl,
+      homeBaseLatitude,
+      homeBaseLongitude,
       shareToken: uuid().replace(/-/g, '').substring(0, 16),
     },
   });

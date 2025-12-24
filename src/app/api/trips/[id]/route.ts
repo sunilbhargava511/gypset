@@ -49,7 +49,7 @@ export async function PUT(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { title, description, isPublic } = await req.json();
+  const { title, description, isPublic, homeBaseAddress, homeBaseUrl, homeBaseLatitude, homeBaseLongitude } = await req.json();
 
   const trip = await prisma.trip.findFirst({
     where: { id, userId: session.user.id },
@@ -65,6 +65,10 @@ export async function PUT(
       ...(title && { title }),
       ...(description !== undefined && { description }),
       ...(isPublic !== undefined && { isPublic }),
+      ...(homeBaseAddress !== undefined && { homeBaseAddress }),
+      ...(homeBaseUrl !== undefined && { homeBaseUrl }),
+      ...(homeBaseLatitude !== undefined && { homeBaseLatitude }),
+      ...(homeBaseLongitude !== undefined && { homeBaseLongitude }),
     },
   });
 

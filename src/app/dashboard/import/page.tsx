@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ChevronLeft,
@@ -18,6 +18,7 @@ import {
   Map as MapIcon,
   List,
   AlertCircle,
+  Tag,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { MapView, MapLocation } from '@/components/MapView';
@@ -49,8 +50,28 @@ interface Trip {
   title: string;
 }
 
+const SUGGESTED_CATEGORIES = [
+  'Eating',
+  'Drinking',
+  'Cafes',
+  'Temples',
+  'Sightseeing',
+  'Beaches',
+  'Snorkeling',
+  'Shopping',
+  'Nightlife',
+  'Activities',
+  'Nature',
+  'Museums',
+  'Hotels',
+];
+
 export default function SmartImportPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlTripId = searchParams.get('tripId');
+  const urlCategory = searchParams.get('category');
+
   const [textInput, setTextInput] = useState('');
   const [parsing, setParsing] = useState(false);
   const [parsedLocations, setParsedLocations] = useState<ParsedLocation[]>([]);
@@ -64,6 +85,9 @@ export default function SmartImportPage() {
   const [googleMapsApiKey, setGoogleMapsApiKey] = useState('');
   const [importComplete, setImportComplete] = useState(false);
   const [importedTripId, setImportedTripId] = useState<string | null>(null);
+  const [category, setCategory] = useState<string>(urlCategory || '');
+  const [customCategory, setCustomCategory] = useState('');
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
 
   useEffect(() => {
     fetchTrips();
@@ -76,7 +100,10 @@ export default function SmartImportPage() {
       if (res.ok) {
         const data = await res.json();
         setTrips(data);
-        if (data.length > 0) {
+        // Use URL tripId if provided, otherwise use first trip
+        if (urlTripId && data.find((t: Trip) => t.id === urlTripId)) {
+          setSelectedTrip(urlTripId);
+        } else if (data.length > 0) {
           setSelectedTrip(data[0].id);
         }
       }
@@ -130,7 +157,14 @@ export default function SmartImportPage() {
       }));
 
       setParsedLocations(locationsWithIds);
-      toast.success(`Found ${locationsWithIds.length} places`);
+
+      // Set suggested category from AI
+      if (data.suggestedCategory?.category) {
+        setCategory(data.suggestedCategory.category);
+        toast.success(`Found ${locationsWithIds.length} places - suggested category: ${data.suggestedCategory.category}`);
+      } else {
+        toast.success(`Found ${locationsWithIds.length} places`);
+      }
     } catch (error) {
       console.error('Parse error:', error);
       toast.error('Failed to parse text');
@@ -198,12 +232,15 @@ export default function SmartImportPage() {
 
     setImporting(true);
     try {
+      const finalCategory = showCustomCategory ? customCategory.trim() : category;
+
       const res = await fetch('/api/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tripId: selectedTrip,
           sourceType: 'direct',
+          category: finalCategory || null,
           locations: selected.map((loc) => ({
             name: loc.name,
             address: loc.address,
@@ -227,7 +264,8 @@ export default function SmartImportPage() {
       }
 
       const data = await res.json();
-      toast.success(`Imported ${data.importedLocations} places`);
+      const finalCat = showCustomCategory ? customCategory.trim() : category;
+      toast.success(`Imported ${data.importedLocations} places${finalCat ? ` to ${finalCat}` : ''}`);
       setImportComplete(true);
       setImportedTripId(selectedTrip);
     } catch (error) {
@@ -287,10 +325,17 @@ export default function SmartImportPage() {
             Import More
           </button>
           <button
-            onClick={() => router.push(`/dashboard/trips/${importedTripId}`)}
+            onClick={() => {
+              const finalCat = showCustomCategory ? customCategory.trim() : category;
+              if (finalCat) {
+                router.push(`/dashboard/trips/${importedTripId}/category/${encodeURIComponent(finalCat)}`);
+              } else {
+                router.push(`/dashboard/trips/${importedTripId}`);
+              }
+            }}
             className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
           >
-            View Trip
+            {(showCustomCategory ? customCategory.trim() : category) ? `View ${showCustomCategory ? customCategory.trim() : category}` : 'View Trip'}
           </button>
         </div>
       </div>
@@ -335,6 +380,50 @@ export default function SmartImportPage() {
               >
                 <List className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* Category Selection */}
+            <div className="flex items-center gap-2">
+              <Tag className="w-4 h-4 text-gray-400" />
+              {showCustomCategory ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="text"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    placeholder="Custom category"
+                    className="px-2 py-1 border border-gray-300 rounded text-sm w-28 focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <button
+                    onClick={() => {
+                      setShowCustomCategory(false);
+                      setCustomCategory('');
+                    }}
+                    className="p-1 text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <select
+                  value={category}
+                  onChange={(e) => {
+                    if (e.target.value === '__custom__') {
+                      setShowCustomCategory(true);
+                      setCategory('');
+                    } else {
+                      setCategory(e.target.value);
+                    }
+                  }}
+                  className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">No category</option>
+                  {SUGGESTED_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                  <option value="__custom__">+ Custom...</option>
+                </select>
+              )}
             </div>
 
             {/* Trip Selection */}
@@ -399,7 +488,7 @@ export default function SmartImportPage() {
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  Save {validCount} Places
+                  Save {validCount} to {showCustomCategory && customCategory.trim() ? customCategory.trim() : category || 'Trip'}
                 </>
               )}
             </button>

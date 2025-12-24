@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, MapPin, Trash2, Edit2, Share2, MoreVertical, Download, Chrome } from 'lucide-react';
+import { Plus, MapPin, Trash2, Edit2, Share2, MoreVertical, Download, Chrome, Home } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [showNewTrip, setShowNewTrip] = useState(false);
   const [newTripTitle, setNewTripTitle] = useState('');
   const [newTripDescription, setNewTripDescription] = useState('');
+  const [newHomeBase, setNewHomeBase] = useState('');
   const [creating, setCreating] = useState(false);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
@@ -58,6 +59,7 @@ export default function DashboardPage() {
         body: JSON.stringify({
           title: newTripTitle,
           description: newTripDescription,
+          homeBaseAddress: newHomeBase || null,
         }),
       });
 
@@ -66,6 +68,7 @@ export default function DashboardPage() {
         setShowNewTrip(false);
         setNewTripTitle('');
         setNewTripDescription('');
+        setNewHomeBase('');
         fetchTrips();
       } else {
         toast.error('Failed to create trip');
@@ -154,6 +157,24 @@ export default function DashboardPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 h-24 resize-none"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <span className="flex items-center gap-2">
+                      <Home className="w-4 h-4 text-indigo-500" />
+                      Where are you staying? (optional)
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newHomeBase}
+                    onChange={(e) => setNewHomeBase(e.target.value)}
+                    placeholder="e.g., Hotel Roma, Via dei Condotti 45, Rome or Airbnb URL"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    This will be the center of your maps. You can add an address or paste an Airbnb/Booking link.
+                  </p>
+                </div>
               </div>
               <div className="flex justify-end gap-3 mt-6">
                 <button
@@ -161,6 +182,7 @@ export default function DashboardPage() {
                     setShowNewTrip(false);
                     setNewTripTitle('');
                     setNewTripDescription('');
+                    setNewHomeBase('');
                   }}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { extractLocationsFromText, geocodeParsedLocations } from '@/lib/llm';
+import { extractLocationsFromText, geocodeParsedLocations, suggestCategory } from '@/lib/llm';
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -19,13 +19,19 @@ export async function POST(req: NextRequest) {
 
     console.log('Parsing text, length:', text.length);
 
-    // Extract locations from text using AI
-    const parsedLocations = await extractLocationsFromText(text, session.user.id);
+    // Extract locations and suggest category in parallel
+    const [parsedLocations, categorySuggestion] = await Promise.all([
+      extractLocationsFromText(text, session.user.id),
+      suggestCategory(text, session.user.id),
+    ]);
+
     console.log('Parsed locations count:', parsedLocations.length);
+    console.log('Suggested category:', categorySuggestion);
 
     if (parsedLocations.length === 0) {
       return NextResponse.json({
         locations: [],
+        suggestedCategory: categorySuggestion,
         message: 'No locations found in the text'
       });
     }
@@ -35,10 +41,16 @@ export async function POST(req: NextRequest) {
       console.log('Geocoding locations...');
       const geocodedLocations = await geocodeParsedLocations(parsedLocations, session.user.id);
       console.log('Geocoded locations:', geocodedLocations.length);
-      return NextResponse.json({ locations: geocodedLocations });
+      return NextResponse.json({
+        locations: geocodedLocations,
+        suggestedCategory: categorySuggestion,
+      });
     }
 
-    return NextResponse.json({ locations: parsedLocations });
+    return NextResponse.json({
+      locations: parsedLocations,
+      suggestedCategory: categorySuggestion,
+    });
   } catch (error) {
     console.error('Parse text error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to parse text';

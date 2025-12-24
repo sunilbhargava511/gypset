@@ -73,6 +73,13 @@ model Trip {
   description String?
   isPublic    Boolean   @default(false)
   shareToken  String?   @unique
+
+  // Home base - where you're staying
+  homeBaseAddress    String?
+  homeBaseUrl        String?   // URL from which address was derived (e.g., Airbnb link)
+  homeBaseLatitude   Float?
+  homeBaseLongitude  Float?
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -87,6 +94,9 @@ model Location {
   id                  String   @id @default(uuid())
   tripId              String
   userId              String
+
+  // Category for map grouping (e.g., "Eating", "Temples", "Snorkeling", "Shopping")
+  category            String?
 
   // Source info
   sourceUrl           String?

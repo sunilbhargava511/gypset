@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { tripId, sourceType, locations: directLocations, text, csvData } = await req.json();
+    const { tripId, sourceType, locations: directLocations, text, csvData, category } = await req.json();
 
     if (!tripId) {
       return NextResponse.json({ error: 'Trip ID is required' }, { status: 400 });
@@ -121,6 +121,7 @@ export async function POST(req: NextRequest) {
               address: loc.address,
               sourceUrl: loc.url,
               rawTranscription: loc.notes,
+              category: category || null,
               orderIndex,
             },
           });
