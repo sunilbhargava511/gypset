@@ -234,11 +234,11 @@ export default function DashboardPage() {
           {trips.map((trip) => (
             <div
               key={trip.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
             >
               {/* Preview images */}
               <Link href={`/dashboard/trips/${trip.id}`}>
-                <div className="h-32 bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+                <div className="h-32 bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center rounded-t-xl overflow-hidden">
                   {trip.locations.length > 0 && trip.locations[0].urlImage ? (
                     <img
                       src={trip.locations[0].urlImage}
